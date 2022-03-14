@@ -6,7 +6,7 @@ import(
 // "gorm.io/driver/postgres"
 "time"
 "database/sql"
-"github.com/uvoo/minimon/pkg/db"
+"github.com/uvoo/minimon/db"
 "os"
 //"github.com/uvoo/minimon/pkg/db"
 )
