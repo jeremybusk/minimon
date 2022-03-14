@@ -3,7 +3,14 @@ module github.com/uvoo/minimon/v2
 go 1.17
 
 require (
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.0
+	github.com/tcnksm/go-httpstat v0.2.0
+	github.com/uvoo/minimon v0.0.0-20220313223629-3c1861243cd7
+	gorm.io/driver/postgres v1.3.1
+	gorm.io/gorm v1.23.2
+)
+
+require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -14,10 +21,6 @@ require (
 	github.com/jackc/pgx/v4 v4.14.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
-	github.com/tcnksm/go-httpstat v0.2.0 // indirect
-	github.com/uvoo/minimon v0.0.0-20220313223629-3c1861243cd7 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gorm.io/driver/postgres v1.3.1 // indirect
-	gorm.io/gorm v1.23.2 // indirect
 )
