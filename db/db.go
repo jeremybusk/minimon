@@ -8,12 +8,12 @@ import (
     "gorm.io/gorm"
 )
 
-var DBcon *gorm.DB
+var DB *gorm.DB
 
 func Init(dbURL string) *gorm.DB {
     // dbURL := "postgres://pg:pass@localhost:5432/crud"
 
-    db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+    DB, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 
     if err != nil {
         log.Fatalln(err)
@@ -23,3 +23,7 @@ func Init(dbURL string) *gorm.DB {
 
     return db
 }
+
+func Close() error {
+  return DB.Close()
+  }
