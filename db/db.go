@@ -12,7 +12,7 @@ import (
 
 var DB *gorm.DB
 
-func Open() {
+func Open() *gorm.DB {
    var err error
    // DB, err = gorm.Open("postgres", "host=localhost port=5432 user=someUser dbname=someDB password=somePW sslmode=disable")
    dbURL := os.Getenv("MINIMON_DBURL")
@@ -21,5 +21,6 @@ func Open() {
        log.Fatalln(err)
        // return err
    }
-   fmt.Printf("%v", DB)
+   // fmt.Printf("%v", DB)
+   return DB
 }
