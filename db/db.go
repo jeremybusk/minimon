@@ -8,6 +8,8 @@ import (
     "gorm.io/gorm"
 )
 
+var DBcon *gorm.DB
+
 func Init(dbURL string) *gorm.DB {
     // dbURL := "postgres://pg:pass@localhost:5432/crud"
 

@@ -31,7 +31,8 @@ type URL struct {
     // Rsp_time     Decimal `gorm:"type:decimal(16,6);default:0"`
     //Amount       float32   `sql:"type:decimal(10,2);"`
     Sequence     int
-	test string
+	Test string
+	Test2 string
     // Rsp_time     float64
 }
 
