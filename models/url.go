@@ -1,4 +1,4 @@
-package db
+package models
 
 type URL struct {
     gorm.Model
