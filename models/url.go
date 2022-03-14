@@ -1,3 +1,5 @@
+package db
+
 type URL struct {
     gorm.Model
     //URL_id       int64  `gorm:"primaryKey"`
