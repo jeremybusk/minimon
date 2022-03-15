@@ -4,61 +4,138 @@ import (
 	// "database/sql"
 	"fmt"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"minimon/database"
-	"os"
 	"github.com/tcnksm/go-httpstat"
-	"log"
-	"net/http"
-	"time"
+	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
-
+	"log"
+	"minimon/database"
+	"net/http"
+	"os"
+	"time"
+	"database/sql"
+	"github.com/jackc/pgtype"
 	// https://github.com/davecheney/httpstat.git
 	// "time"
 )
 
+// sql.NullString
+// Int64 32 16 Time
+type Platform struct {
+	gorm.Model
+	Disabled         bool `gorm:"type:bool;default:false"`
+	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Note             sql.NullString
+	Sequence int     `gorm:"type:int;default:0"`
+	Name             sql.NullString 
+}
+
+
+type Group struct {
+	gorm.Model
+	//URL_id       int64  `gorm:"primaryKey"`
+	Disabled        bool `gorm:"type:bool;default:false"` 
+	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Note            sql.NullString
+	name string
+}
+
+
+//fmt.Println(namelookup, connect, pretransfer, starttransfer, total)
+type HTTPConnectionTrigger struct {
+	gorm.Model
+	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+    DomainNameLookupTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t1.Sub(t0)
+    TCPConnectionTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t2.Sub(t1)
+    ConnectTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t2.Sub(t0)
+    PreTransferTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t3.Sub(t0)
+    StartTransferTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t4.Sub(t0)
+    ServerProcessingTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t4.Sub(t3)
+    TLSHandshakeTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t6.Sub(t5)
+    ContextTransferTime  float64 `gorm:"type:decimal(16,6);default:500"`//:= t7.Sub(t4)
+    TotalTime float64 `gorm:"type:decimal(16,6);default:10000"` //:= t7.Sub(t0)
+	StatusCode int16 `gorm:"default:200`
+	TextRegexMatch string  `gorm:"default:megamonstatushealthy`
+    IPAddress  pgtype.Inet    `gorm:"type:inet;default:0.0.0.0/0"`
+}
+
+//fmt.Println(namelookup, connect, pretransfer, starttransfer, total)
+type HTTPConnection struct {
+	gorm.Model
+	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+    DomainNameLookupTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t1.Sub(t0)
+    TCPConnectionTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t1)
+    ConnectTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t0)
+    PreTransferTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t3.Sub(t0)
+    StartTransferTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t4.Sub(t0)
+    ServerProcessingTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t4.Sub(t3)
+    TLSHandshakeTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t6.Sub(t5)
+    ContextTransferTime  float64 `gorm:"type:decimal(16,6);default:0"`//:= t7.Sub(t4)
+    TotalTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t7.Sub(t0)
+	StatusCode int16
+	TextRegexMatch bool
+    IPAddress  pgtype.Inet    `gorm:"type:inet"`
+}
+
+type Host struct {
+//  IP  pgtype.Inet    `gorm:"type:inet"`
+//   MAC pgtype.Macaddr `gorm:"type:macaddr"`
+}
+
+type Node struct {
+}
+
+type DomainName struct {
+}
+
+
+
 type URL struct {
 	gorm.Model
 	//URL_id       int64  `gorm:"primaryKey"`
-	Disabled         bool
+	Disabled         bool `gorm:"type:bool;default:false"` 
 	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Note             string
-	URL_group_id     int
+    HTTPConnections []HTTPConnection
+    HTTPConnectionsTriggers []HTTPConnectionTrigger `gorm:"many2many:URLs_x_HTTPConnectionTriggers;"`
+    Groups []Group `gorm:"many2many:URLs_x_Groups;"`
 	Path             string `gorm:"unique;not null"`
-	Rsp_code         int
-	Rsp_code_exp     int `gorm:"default:200`
-	Rsp_code_test    bool
-	Rsp_time         float64 `gorm:"type:decimal(16,6);default:0"`
-	Rsp_time_exp     int     `gorm:"default:4`
-	Rsp_time_test    bool
+	HTTPResponseCode         int
+	HTTPResponseCodeTrigger     int `gorm:"default:200`
+	HTTPResponseCodeTest    bool
+
 	Rsp_regex_exp    string `gorm:"default:statushealthy`
 	Rsp_regex_test   bool
 	AllowInsecureTLS bool `gorm:"default:false`
-// exp is expected or threshold value
-	DNS_lookup_rsp_time float64 `gorm:"type:decimal(16,6);default:0"`
-	DNS_lookup_rsp_time_exp float64 `gorm:"type:decimal(16,6);default:0"`
-	DNS_lookup_rsp_time_test bool `gorm:"type:int;default:0"`
-	TCP_connection_rsp_time float64 `gorm:"type:decimal(16,6);default:0"`
-	TCP_connection_rsp_time_exp float64 `gorm:"type:decimal(16,6);default:0"`
-	TCP_connection_rsp_time_test bool `gorm:"type:int;default:0"`
-	TLS_handshake_rsp_time float64 `gorm:"type:decimal(16,6);default:0"`
-	TLS_handshake_rsp_time_exp float64 `gorm:"type:decimal(16,6);default:0"`
-	TLS_handshake_rsp_time_test bool `gorm:"type:int;default:0"` 
-	Server_processing_rsp_time float64 `gorm:"type:decimal(16,6);default:0"`
-	Server_processing_rsp_time_exp float64 `gorm:"type:decimal(16,6);default:0"`
-	Server_processing_rsp_time_test bool `gorm:"type:int;default:0"`
-	Content_transfer_rsp_time float64 `gorm:"type:decimal(16,6);default:0"`
-	Content_transfer_rsp_time_exp float64 `gorm:"type:decimal(16,6);default:0"`
-	Content_transfer_rsp_time_test bool `gorm:"type:int;default:0"`
+	// exp is expected or threshold value
+	DNS_lookup_rsp_time             float64 `gorm:"type:decimal(16,6);default:0"`
+	DNS_lookup_rsp_time_exp         float64 `gorm:"type:decimal(16,6);default:0"`
+	DNS_lookup_rsp_time_test        int    `gorm:"type:int;default:0"`
+	TCP_connection_rsp_time         float64 `gorm:"type:decimal(16,6);default:0"`
+	TCP_connection_rsp_time_exp     float64 `gorm:"type:decimal(16,6);default:0"`
+	TCP_connection_rsp_time_test    int    `gorm:"type:int;default:0"`
+	TLS_handshake_rsp_time          float64 `gorm:"type:decimal(16,6);default:0"`
+	TLS_handshake_rsp_time_exp      float64 `gorm:"type:decimal(16,6);default:0"`
+	TLS_handshake_rsp_time_test     int    `gorm:"type:int;default:0"`
+	Server_processing_rsp_time      float64 `gorm:"type:decimal(16,6);default:0"`
+	Server_processing_rsp_time_exp  float64 `gorm:"type:decimal(16,6);default:0"`
+	Server_processing_rsp_time_test int    `gorm:"type:int;default:0"`
+	Content_transfer_rsp_time       float64 `gorm:"type:decimal(16,6);default:0"`
+	Content_transfer_rsp_time_exp   float64 `gorm:"type:decimal(16,6);default:0"`
+	Content_transfer_rsp_time_test  int    `gorm:"type:int;default:0"`
 
 	// Rsp_time     Decimal `gorm:"type:decimal(16,6);default:0"`
 	//Amount       float32   `sql:"type:decimal(10,2);"`
 	Sequence int
 	Test     string
 	Test2    string
+    Platforms []Platform `gorm:"many2many:url_x_platform;"`
+	// Primary_Platform
 	// Rsp_time     float64
 }
+
+
+
 
 // var URLS []URL{}
 // var URLS []string
@@ -94,34 +171,34 @@ func CheckURLs() []URL {
 }
 
 func getURLStats(url string) {
-    // Create a new HTTP request
-    // req, err := http.NewRequest("GET", "https://github.com", nil)
-    req, err := http.NewRequest("GET", url, nil)
-    if err != nil {
-        log.Fatal(err)
-    }
-    // Create a httpstat powered context
-    var result httpstat.Result
-    ctx := httpstat.WithHTTPStat(req.Context(), &result)
-    req = req.WithContext(ctx)
-    // Send request by default HTTP client
-    client := http.DefaultClient
-    res, err := client.Do(req)
-    if err != nil {
-        log.Fatal(err)
-    }
-    if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
-        log.Fatal(err)
-    }
-    res.Body.Close()
-    end := time.Now()
-    fmt.Printf("end %v", end)
-    // Show the results
-    log.Printf("DNS lookup: %d ms", int(result.DNSLookup/time.Millisecond))
-    log.Printf("TCP connection: %d ms", int(result.TCPConnection/time.Millisecond))
-    log.Printf("TLS handshake: %d ms", int(result.TLSHandshake/time.Millisecond))
-    log.Printf("Server processing: %d ms", int(result.ServerProcessing/time.Millisecond))
-    log.Printf("Content transfer: %d ms", int(result.ContentTransfer(time.Now())/time.Millisecond))
+	// Create a new HTTP request
+	// req, err := http.NewRequest("GET", "https://github.com", nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Create a httpstat powered context
+	var result httpstat.Result
+	ctx := httpstat.WithHTTPStat(req.Context(), &result)
+	req = req.WithContext(ctx)
+	// Send request by default HTTP client
+	client := http.DefaultClient
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+		log.Fatal(err)
+	}
+	res.Body.Close()
+	end := time.Now()
+	fmt.Printf("end %v", end)
+	// Show the results
+	log.Printf("DNS lookup: %d ms", int(result.DNSLookup/time.Millisecond))
+	log.Printf("TCP connection: %d ms", int(result.TCPConnection/time.Millisecond))
+	log.Printf("TLS handshake: %d ms", int(result.TLSHandshake/time.Millisecond))
+	log.Printf("Server processing: %d ms", int(result.ServerProcessing/time.Millisecond))
+	log.Printf("Content transfer: %d ms", int(result.ContentTransfer(time.Now())/time.Millisecond))
 }
 
 func GetOneURL() URL {
