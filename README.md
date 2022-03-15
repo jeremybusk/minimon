@@ -31,3 +31,6 @@ Using sqlx, goose(migrations) & postgrest(http rest sql) may be a good option bu
 Rewrite in V2 should make it a lot better but we'll see.
 ```
 https://levelup.gitconnected.com/fastest-postgresql-client-library-for-go-579fa97909fb
+
+
+https://github.com/davecheney/httpstat may be better http stat tool and use https://github.com/davecheney/httpstat/blob/master/main.go
