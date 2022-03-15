@@ -24,3 +24,10 @@ const (
         DebugColor   = "\033[0;36m%s\033[0m"
 )
 ```
+
+Considerations
+```
+Using sqlx, goose(migrations) & postgrest(http rest sql) may be a good option but going to try Gorm.
+Rewrite in V2 should make it a lot better but we'll see.
+```
+https://levelup.gitconnected.com/fastest-postgresql-client-library-for-go-579fa97909fb
