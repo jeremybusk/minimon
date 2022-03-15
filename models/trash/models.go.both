@@ -1,0 +1,94 @@
+package models
+
+import(
+"gorm.io/gorm"
+"github.com/google/uuid"
+"time"
+"database/sql"
+"myapp/database"
+"fmt"
+"os"
+)
+
+type URL struct {
+    gorm.Model
+    //URL_id       int64  `gorm:"primaryKey"`
+    Disabled     bool
+    UUID         string `gorm:"type:uuid;default:uuid_generate_v4()"`
+    Note         string
+    URL_group_id int
+    Path          string `gorm:"unique;not null"`
+    Rsp_code     int
+    Rsp_code_exp int `gorm:"default:200`
+    Rsp_code_test   bool
+    Rsp_time     float64 `gorm:"type:decimal(16,6);default:0"`
+    Rsp_time_exp int `gorm:"default:4`
+    Rsp_time_test   bool
+    Rsp_regex_exp string `gorm:"default:statushealthy`
+    Rsp_regex_test   bool
+    AllowInsecureTLS    bool `gorm:"default:false`
+    // Rsp_time     Decimal `gorm:"type:decimal(16,6);default:0"`
+    //Amount       float32   `sql:"type:decimal(10,2);"`
+    Sequence     int
+        Test string
+        Test2 string
+    // Rsp_time     float64
+}
+
+
+type User struct {
+    gorm.Model
+    UUID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+    // ID           uint
+    Name         string
+    Age          uint8
+    Birthday     time.Time
+    Foo          string
+    Foo2         string
+    Email        string
+    ActivatedAt  sql.NullTime
+    MemberNumber sql.NullString
+}
+
+func Get() {
+path := "https://example.com"
+URL := URL{}
+// URL = "{Path: Foo}"
+    database.DBCon.First(&URL, "path = ?", path)
+
+    // URL := models.URL{}
+		    database.DBCon.First(&URL, "path = ?", path)
+    fmt.Printf("zzzz===============\n\n\n")
+			    database.DBCon.Model(&URL).Update("Rsp_time", 2)
+    fmt.Printf("jjzzzz===============\n\n\n")
+				    fmt.Printf("URL Path: %v\n", URL.Path)
+				    fmt.Printf("URL UUID: %v\n", URL.UUID)
+    // fmt.Printf("URL.path: %v", &URL)
+    fmt.Printf("zzzz===============\n\n\n")
+    // fmt.Printf("URL.path: %v\n", &URL.Path)
+    fmt.Printf("URL.path: %v\n", &URL.UUID)
+	os.Exit(0)
+    fmt.Printf("zzzz===============\n\n\n")
+    fmt.Printf("URL: %+v\n", &URL)
+    fmt.Printf("YYY===============\n\n\n")
+
+    fmt.Printf("aaaaaa===============\n")
+    fmt.Printf("URL: %+v\n", &URL.ID)
+    fmt.Printf("URL: %+v\n", &URL.ID)
+    fmt.Printf("sssss===============\n")
+    fmt.Printf("URL: %+v\n", &URL.ID)
+    fmt.Printf("sssss===============\n")
+    fmt.Printf("FF: %v\n", &URL.ID)
+    fmt.Printf("bbbbbb===============\n")
+   // database.DBCon.Query("hello")
+}
+
+// fmt.Println("FOO:", os.Getenv("FOO"))
+// dbURL := os.Getenv("MINIMON_DBURL")
+// DB := db.Init(dbURL)
+
+// func init(){
+// database.DBCon.AutoMigrate(
+//        &User{},
+//        &URL{} )
+//}

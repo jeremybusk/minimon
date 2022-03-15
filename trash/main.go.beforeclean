@@ -1,0 +1,42 @@
+package main
+
+import(
+"minimon/database"
+"minimon/models"
+// "myapp/foo"
+// import "database/sql"
+    "gorm.io/driver/postgres"
+	    "gorm.io/gorm"
+		"os"
+		"fmt"
+		)
+
+// var database.DBCon *gorm.DB
+
+func main() {
+
+    var err error
+    // database.DBCon, err = gorm.Open("minimon", "user=minimon dbname=minimon sslmode=disable")
+    // database.DBCon, err = gorm.Open("minimon", "user=minimon dbname=minimon sslmode=disable")
+	   dbURL := os.Getenv("MINIMON_DBURL")
+	       database.DBCon, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+    if err != nil {
+	        panic(err)
+			    }
+    // database.DBCon.AutoMigrate(&User{})
+
+	fmt.Printf("%v", err)
+	path := "https://example.com"
+URL := models.URL{}
+	database.DBCon.First(&URL, "path = ?", path)
+	fmt.Printf("URL Path: %v\n", URL.Path)
+	fmt.Printf("URL ID : %v\n", URL.ID)
+
+	fmt.Printf("===========")
+	// foo.Get()
+	models.Get()
+	// fmt.Printf("%v", a)
+	fmt.Printf("===========")
+	// e := foo.run()
+
+}
