@@ -1,7 +1,16 @@
 Build & Use
 ```
+cp .env.example .env
+. .env
 go build
 ./minimon
+```
+
+Embedded Postgres Alone
+```
+go build epg.go
+./epg
+Crtl-C after started to keep runnig in background
 ```
 
 
