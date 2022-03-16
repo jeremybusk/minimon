@@ -56,13 +56,14 @@ type HTTPConnectionTrigger struct {
     TotalTime float64 `gorm:"type:decimal(16,6);default:10000"` //:= t7.Sub(t0)
 	StatusCode int16 `gorm:"default:200`
 	TextRegexMatch string  `gorm:"default:megamonstatushealthy`
-    IPAddress  pgtype.Inet    `gorm:"type:inet;default:0.0.0.0/0"`
+    IPAddress  pgtype.Inet    `gorm:"type:inet;default:'0.0.0.0/0'"`
 }
 
 //fmt.Println(namelookup, connect, pretransfer, starttransfer, total)
 type HTTPConnection struct {
 	gorm.Model
 	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	URLID int
     DomainNameLookupTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t1.Sub(t0)
     TCPConnectionTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t1)
     ConnectTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t0)
@@ -93,40 +94,14 @@ type DomainName struct {
 type URL struct {
 	gorm.Model
 	//URL_id       int64  `gorm:"primaryKey"`
-	Disabled         bool `gorm:"type:bool;default:false"` 
+	Disabled         bool `gorm:"type:bool;default:false"`
 	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Note             string
     HTTPConnections []HTTPConnection
     HTTPConnectionsTriggers []HTTPConnectionTrigger `gorm:"many2many:URLs_x_HTTPConnectionTriggers;"`
     Groups []Group `gorm:"many2many:URLs_x_Groups;"`
 	Path             string `gorm:"unique;not null"`
-	HTTPResponseCode         int
-	HTTPResponseCodeTrigger     int `gorm:"default:200`
-	HTTPResponseCodeTest    bool
-
-	Rsp_regex_exp    string `gorm:"default:statushealthy`
-	Rsp_regex_test   bool
 	AllowInsecureTLS bool `gorm:"default:false`
-	// exp is expected or threshold value
-	DNS_lookup_rsp_time             float64 `gorm:"type:decimal(16,6);default:0"`
-	DNS_lookup_rsp_time_exp         float64 `gorm:"type:decimal(16,6);default:0"`
-	DNS_lookup_rsp_time_test        int    `gorm:"type:int;default:0"`
-	TCP_connection_rsp_time         float64 `gorm:"type:decimal(16,6);default:0"`
-	TCP_connection_rsp_time_exp     float64 `gorm:"type:decimal(16,6);default:0"`
-	TCP_connection_rsp_time_test    int    `gorm:"type:int;default:0"`
-	TLS_handshake_rsp_time          float64 `gorm:"type:decimal(16,6);default:0"`
-	TLS_handshake_rsp_time_exp      float64 `gorm:"type:decimal(16,6);default:0"`
-	TLS_handshake_rsp_time_test     int    `gorm:"type:int;default:0"`
-	Server_processing_rsp_time      float64 `gorm:"type:decimal(16,6);default:0"`
-	Server_processing_rsp_time_exp  float64 `gorm:"type:decimal(16,6);default:0"`
-	Server_processing_rsp_time_test int    `gorm:"type:int;default:0"`
-	Content_transfer_rsp_time       float64 `gorm:"type:decimal(16,6);default:0"`
-	Content_transfer_rsp_time_exp   float64 `gorm:"type:decimal(16,6);default:0"`
-	Content_transfer_rsp_time_test  int    `gorm:"type:int;default:0"`
-
-	// Rsp_time     Decimal `gorm:"type:decimal(16,6);default:0"`
-	//Amount       float32   `sql:"type:decimal(10,2);"`
-	Sequence int
 	Test     string
 	Test2    string
     Platforms []Platform `gorm:"many2many:url_x_platform;"`
