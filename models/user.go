@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"minimon/database"
+	"minimon/db"
 	// "os"
 	"time"
 )
 
 type User struct {
 	gorm.Model
-	UUID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-    Disabled         bool
-    Note             string
+	UUID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Disabled bool
+	Note     string
 	// ID           uint
 	Name         string
 	Age          uint8

@@ -1,12 +1,18 @@
-package database
+package db
 
 import (
+	"github.com/jackc/pgx/v4/pgxpool"
 	"gorm.io/gorm"
 )
 
 var (
 	// DBCon is the connection handle database
 	DBCon *gorm.DB
+)
+
+var (
+	// DBCon is the connection handle database
+	DB *pgxpool.Pool
 )
 
 // Usage:

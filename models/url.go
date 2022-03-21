@@ -1,7 +1,8 @@
 package models
 
 import (
-	// "database/sql"
+	// "db/sql"
+	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/tcnksm/go-httpstat"
@@ -9,12 +10,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"minimon/database"
+	"minimon/db"
+	"minimon/monitorhttp"
+	"net"
 	"net/http"
 	"os"
 	"time"
-	"database/sql"
-	"github.com/jackc/pgtype"
+	//"github.com/jackc/pgtype"
 	// https://github.com/davecheney/httpstat.git
 	// "time"
 )
@@ -23,64 +25,78 @@ import (
 // Int64 32 16 Time
 type Platform struct {
 	gorm.Model
-	Disabled         bool `gorm:"type:bool;default:false"`
-	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Note             sql.NullString
-	Sequence int     `gorm:"type:int;default:0"`
-	Name             sql.NullString 
+	Disabled bool      `gorm:"type:bool;default:false"`
+	UUID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Note     sql.NullString
+	Sequence int `gorm:"type:int;default:0"`
+	Name     sql.NullString
 }
-
 
 type Group struct {
 	gorm.Model
 	//URL_id       int64  `gorm:"primaryKey"`
-	Disabled        bool `gorm:"type:bool;default:false"` 
-	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Note            sql.NullString
-	name string
+	Disabled bool      `gorm:"type:bool;default:false"`
+	UUID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Note     sql.NullString
+	name     string
 }
-
 
 //fmt.Println(namelookup, connect, pretransfer, starttransfer, total)
 type HTTPConnectionTrigger struct {
 	gorm.Model
-	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-    DomainNameLookupTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t1.Sub(t0)
-    TCPConnectionTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t2.Sub(t1)
-    ConnectTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t2.Sub(t0)
-    PreTransferTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t3.Sub(t0)
-    StartTransferTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t4.Sub(t0)
-    ServerProcessingTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t4.Sub(t3)
-    TLSHandshakeTime float64 `gorm:"type:decimal(16,6);default:500"` //:= t6.Sub(t5)
-    ContextTransferTime  float64 `gorm:"type:decimal(16,6);default:500"`//:= t7.Sub(t4)
-    TotalTime float64 `gorm:"type:decimal(16,6);default:10000"` //:= t7.Sub(t0)
-	StatusCode int16 `gorm:"default:200`
-	TextRegexMatch string  `gorm:"default:megamonstatushealthy`
-    IPAddress  pgtype.Inet    `gorm:"type:inet;default:'0.0.0.0/0'"`
+	UUID                 uuid.UUID     `gorm:"type:uuid;default:uuid_generate_v4()"`
+	DomainNameLookupTime time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t1.Sub(t0)
+	TCPConnectionTime    time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t2.Sub(t1)
+	ConnectTime          time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t2.Sub(t0)
+	PreTransferTime      time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t3.Sub(t0)
+	StartTransferTime    time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t4.Sub(t0)
+	ServerProcessingTime time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t4.Sub(t3)
+	TLSHandshakeTime     time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t6.Sub(t5)
+	ContextTransferTime  time.Duration `gorm:"type:decimal(16,6);default:500"`   //:= t7.Sub(t4)
+	TotalTime            time.Duration `gorm:"type:decimal(16,6);default:10000"` //:= t7.Sub(t0)
+	StatusCode           int           `gorm:"default:200`
+	CheckResponseBody    bool          `gorm:"type:bool;default:false"`
+	CheckResponseHeader  bool          `gorm:"type:bool;default:false"`
+	ResponseBodyRegex    string        `gorm:"default:megamonstatushealthy`
+	ResponseHeaderRegex  string        `gorm:"default:megamonstatushealthy`
+	// IPAddress  pgtype.Inet    `gorm:"type:inet;default:'0.0.0.0/0'"`
+	IPAddress net.IP `gorm:"type:inet;default:'0.0.0.0/0'"`
+	Note      string
+	Test1     string
+	URLs      []URL
 }
 
 //fmt.Println(namelookup, connect, pretransfer, starttransfer, total)
 type HTTPConnection struct {
 	gorm.Model
-	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	URLID int
-    DomainNameLookupTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t1.Sub(t0)
-    TCPConnectionTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t1)
-    ConnectTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t2.Sub(t0)
-    PreTransferTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t3.Sub(t0)
-    StartTransferTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t4.Sub(t0)
-    ServerProcessingTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t4.Sub(t3)
-    TLSHandshakeTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t6.Sub(t5)
-    ContextTransferTime  float64 `gorm:"type:decimal(16,6);default:0"`//:= t7.Sub(t4)
-    TotalTime float64 `gorm:"type:decimal(16,6);default:0"` //:= t7.Sub(t0)
-	StatusCode int16
-	TextRegexMatch bool
-    IPAddress  pgtype.Inet    `gorm:"type:inet"`
+	UUID                 uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	URLID                int
+	DomainNameLookupTime time.Duration //:= t1.Sub(t0)
+	TCPConnectionTime    time.Duration //:= t2.Sub(t1)
+	ConnectTime          time.Duration //:= t2.Sub(t0)
+	PreTransferTime      time.Duration //:= t3.Sub(t0)
+	StartTransferTime    time.Duration //:= t4.Sub(t0)
+	ServerProcessingTime time.Duration //:= t4.Sub(t3)
+	TLSHandshakeTime     time.Duration //:= t6.Sub(t5)
+	ContextTransferTime  time.Duration //:= t7.Sub(t4)
+	TotalTime            time.Duration //:= t7.Sub(t0)
+	StartTime            time.Time     //:= t0
+	StopTime             time.Time     //:= t7
+	StatusCode           int
+	//TestResponseBodyRegex int
+	//TestResponseHeaderRegex int
+	// TextRegexMatch       bool
+	// IPAddress  pgtype.Inet    `gorm:"type:inet"`
+	IPAddress                net.IP `gorm:"type:inet"`
+	ResponseBodyRegexMatch   bool
+	ResponseHeaderRegexMatch bool
+	ResponseBodyText         string
+	ResponseHeaderText       string
 }
 
 type Host struct {
-//  IP  pgtype.Inet    `gorm:"type:inet"`
-//   MAC pgtype.Macaddr `gorm:"type:macaddr"`
+	//  IP  pgtype.Inet    `gorm:"type:inet"`
+	//   MAC pgtype.Macaddr `gorm:"type:macaddr"`
 }
 
 type Node struct {
@@ -89,42 +105,37 @@ type Node struct {
 type DomainName struct {
 }
 
-
-
 type URL struct {
 	gorm.Model
 	//URL_id       int64  `gorm:"primaryKey"`
-	Disabled         bool `gorm:"type:bool;default:false"`
-	UUID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Note             string
-    HTTPConnections []HTTPConnection
-    HTTPConnectionsTriggers []HTTPConnectionTrigger `gorm:"many2many:URLs_x_HTTPConnectionTriggers;"`
-    Groups []Group `gorm:"many2many:URLs_x_Groups;"`
-	Path             string `gorm:"unique;not null"`
-	AllowInsecureTLS bool `gorm:"default:false`
-	Test     string
-	Test2    string
-    Platforms []Platform `gorm:"many2many:url_x_platform;"`
+	Disabled        bool      `gorm:"type:bool;default:false"`
+	UUID            uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	Note            string
+	HTTPConnections []HTTPConnection
+	// HTTPConnectionsTriggers []HTTPConnectionTrigger `gorm:"many2many:URLs_x_HTTPConnectionTriggers;"`
+	Groups                  []Group    `gorm:"many2many:URLs_x_Groups;"`
+	Path                    string     `gorm:"unique;not null"`
+	AllowInsecureTLS        bool       `gorm:"default:false`
+	Platforms               []Platform `gorm:"many2many:url_x_platform;"`
+	HTTPConnectionTriggerID uint       `gorm:"default:1"`
 	// Primary_Platform
 	// Rsp_time     float64
 }
-
-
-
 
 // var URLS []URL{}
 // var URLS []string
 // func GetURLs() []string{
 func GetURLs() []URL {
+	fmt.Printf("===============\n")
 	URLS := []URL{}
 	// URLS := []URL{}
 	// URLS := []string{"a", "b", "c", "d"}
 	//URLS := []URL
-	// URLS := database.DBCon(&URL)
-	// database.DBCon.First(&URL, "path = ?", '*')
-	// database.DBCon.First(&URL, "path = ?", "https://example.com")
-	database.DBCon.Find(&URLS)
-	fmt.Printf("URLS: %v\n", URLS)
+	// URLS := db.DBCon(&URL)
+	// db.DBCon.First(&URL, "path = ?", '*')
+	// db.DBCon.First(&URL, "path = ?", "https://example.com")
+	db.DBCon.Find(&URLS)
+	fmt.Printf("URLS: %+v\n", URLS)
 	for i, URL := range URLS {
 		fmt.Printf("index: %v, value: %v\n", i, URL)
 	}
@@ -133,13 +144,35 @@ func GetURLs() []URL {
 }
 
 func CheckURLs() []URL {
+	fmt.Printf("===============\n")
 	URLS := []URL{}
-	database.DBCon.Find(&URLS)
+	HTTPConnectionTriggers := []HTTPConnectionTrigger{}
+	// HTTPConnectionTriggers := []HTTPConnectionTrigger{}
+	db.DBCon.Find(&URLS)
+	// db.DBCon.Preload("HTTPConnectionTriggers").Find(&URLS)
 	// fmt.Printf("URLS: %v\n", URLS)
 	for i, URL := range URLS {
-		fmt.Printf("index: %v, value: %v\n", i, URL)
-		fmt.Printf("%i URL.Path: %v\n", i, URL.Path)
-		getURLStats(URL.Path)
+		fmt.Printf("index: %v, value: %+v\n", i, URL)
+		db.DBCon.Find(&HTTPConnectionTriggers, URL.ID)
+		fmt.Printf("===============\n\n")
+		fmt.Printf("&HTTPConnectionTrigger %+v\n", HTTPConnectionTriggers)
+		fmt.Printf("===============\n\n")
+		//db.DBCon.Find(&HTTPConnectionTriggers)
+		//db.DBCon(&HTTPConnectionTriggers).First(&result, "id = ?", URL.id)
+		//db.DBCon.Preload("HTTPConnectionTriggers").Find(&services)
+		//db.Take(&user).Where()
+
+		// fmt.Printf("%i URL.Path: %v\n", i, URL.Path)
+		// r := monitorhttp.HTTPRequest("https://uvoo.io.com")
+		// fmt.Printf("====================")
+		// r := monitorhttp.HTTPRequest(URL.Path, HTTPConnectionTrigger.ResponseBodyRegex, HTTPConnectionTrigger.ResponseHeaderRegex)
+		// r := monitorhttp.HTTPRequest(URL.Path, URLHTTPConnectionTrigger)
+
+		r := monitorhttp.HTTPRequest(URL.Path)
+		fmt.Printf("%v %v\n", i, r.TotalTime)
+
+		// fmt.Printf("====================%v\n", r)
+		// getURLStats(URL.Path)
 	}
 
 	return URLS
@@ -181,9 +214,9 @@ func GetOneURL() URL {
 	// URLS := []URL{}
 	// URLS := []string{"a", "b", "c", "d"}
 	//URLS := []URL
-	// URLS := database.DBCon(&URL)
-	// database.DBCon.First(&URL, "path = ?", '*')
-	database.DBCon.First(&URL, "path = ?", "https://example.com")
+	// URLS := db.DBCon(&URL)
+	// db.DBCon.First(&URL, "path = ?", '*')
+	db.DBCon.First(&URL, "path = ?", "https://example.com")
 	fmt.Printf("URLS: %v\n", URL)
 	return URL
 }
@@ -192,12 +225,12 @@ func GetURL() {
 	path := "https://example.com"
 	URL := URL{}
 	// URL = "{Path: Foo}"
-	database.DBCon.First(&URL, "path = ?", path)
+	db.DBCon.First(&URL, "path = ?", path)
 
 	// URL := models.URL{}
-	database.DBCon.First(&URL, "path = ?", path)
+	db.DBCon.First(&URL, "path = ?", path)
 	fmt.Printf("zzzz===============\n\n\n")
-	database.DBCon.Model(&URL).Update("Rsp_time", 2)
+	db.DBCon.Model(&URL).Update("Rsp_time", 2)
 	fmt.Printf("jjzzzz===============\n\n\n")
 	fmt.Printf("URL Path: %v\n", URL.Path)
 	fmt.Printf("URL UUID: %v\n", URL.UUID)
@@ -218,7 +251,7 @@ func GetURL() {
 	fmt.Printf("sssss===============\n")
 	fmt.Printf("FF: %v\n", &URL.ID)
 	fmt.Printf("bbbbbb===============\n")
-	// database.DBCon.Query("hello")
+	// db.DBCon.Query("hello")
 }
 
 // fmt.Println("FOO:", os.Getenv("FOO"))
@@ -226,6 +259,6 @@ func GetURL() {
 // DB := db.Init(dbURL)
 
 // func init(){
-// database.DBCon.AutoMigrate(
+// db.DBCon.AutoMigrate(
 //        &User{},
 //        &URL{} )
